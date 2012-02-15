@@ -6,6 +6,7 @@ describe CarrierWave::Workers::ProcessAsset do
   let(:worker_class) { CarrierWave::Workers::ProcessAsset }
   let(:user)   { mock('User') }
   let(:image)  { mock('UserAsset') }
+  let(:file) { mock('File') }
   let!(:worker) { worker_class.new(user, '22', :image) }
 
   context ".perform" do
@@ -21,9 +22,11 @@ describe CarrierWave::Workers::ProcessAsset do
   context "#perform" do
     it 'processes versions' do
       user.expects(:find).with('22').returns(user).once
-      user.expects(:image).once.returns(image)
+      user.expects(:image).twice.returns(image)
       user.expects(:process_image_upload=).with(true).once
 
+      image.expects(:file).once.returns(file)
+      file.expects(:nil?).once.returns(false)
       image.expects(:recreate_versions!).once.returns(true)
       user.expects(:respond_to?).with(:image_processing).once.returns(true)
       user.expects(:update_attribute).with(:image_processing, nil).once
